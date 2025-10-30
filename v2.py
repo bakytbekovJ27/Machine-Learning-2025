@@ -7,7 +7,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import plotly.graph_objects as go
 import plotly.express as px
-# from io import StringIO
 
 # Конфигурация страницы
 st.set_page_config(
@@ -44,12 +43,13 @@ st.markdown("### Интерактивное сравнение моделей с
 
 # Боковая панель
 st.sidebar.title("⚙️ Управление")
-show_explanation = st.sidebar.checkbox("👁️ Показать объяснения", value=True)
+show_explanation = st.sidebar.checkbox("👁️ Показать объяснения", value=True, key="show_explanation")
 
 # Выбор источника данных
 data_source = st.sidebar.radio(
     "📁 Источник данных:",
-    ("Встроенные датасеты", "Загрузить CSV файл")
+    ("Встроенные датасеты", "Загрузить CSV файл"),
+    key="data_source"
 )
 
 # Переменная для хранения данных
@@ -61,7 +61,8 @@ if data_source == "Встроенные датасеты":
     # ============== ВСТРОЕННЫЕ ДАТАСЕТЫ ==============
     dataset_choice = st.sidebar.selectbox(
         "Выбери датасет:",
-        ("Простые линейные данные", "Сложные нелинейные данные", "Данные с выбросами", "Множество признаков")
+        ("Простые линейные данные", "Сложные нелинейные данные", "Данные с выбросами", "Множество признаков"),
+        key="dataset_choice"
     )
 
     if dataset_choice == "Простые линейные данные":
@@ -130,7 +131,7 @@ if data_source == "Встроенные датасеты":
 else:
     # ============== ЗАГРУЗКА CSV ==============
     st.sidebar.markdown("### 📤 Загрузи CSV файл")
-    uploaded_file = st.sidebar.file_uploader("Выбери CSV файл", type=['csv'])
+    uploaded_file = st.sidebar.file_uploader("Выбери CSV файл", type=['csv'], key="csv_uploader")
 
     if uploaded_file is not None:
         try:
@@ -140,8 +141,8 @@ else:
             st.sidebar.markdown("### Выбери колонки")
             cols = df.columns.tolist()
             
-            x_col = st.sidebar.selectbox("Независимая переменная (X):", cols)
-            y_col = st.sidebar.selectbox("Зависимая переменная (Y):", cols)
+            x_col = st.sidebar.selectbox("Независимая переменная (X):", cols, key="x_col")
+            y_col = st.sidebar.selectbox("Зависимая переменная (Y):", cols, key="y_col")
             
             if x_col and y_col:
                 X = df[[x_col]].values
@@ -177,7 +178,7 @@ if X is not None and y is not None:
             st.info(f"**📌 Описание:**\n{dataset_desc}")
         
         with col2:
-            st.success(f"**✅ {explanation['linear'][:50]}...**\n\n{explanation['linear']}")
+            st.success(f"**✅ Линейная регрессия:**\n\n{explanation['linear']}")
         
         with col3:
             st.warning(f"**🌳 Случайный лес:**\n\n{explanation['forest']}")
@@ -264,7 +265,7 @@ if X is not None and y is not None:
         height=500
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="prediction_chart")
     
     st.info("💡 **Зелёные точки** — фактические данные. **Синяя линия** — предсказания Линейной регрессии. **Оранжевая пунктирная линия** — предсказания Случайного леса.")
     
@@ -335,7 +336,7 @@ if X is not None and y is not None:
         height=400
     )
     
-    st.plotly_chart(fig_comparison, use_container_width=True)
+    st.plotly_chart(fig_comparison, use_container_width=True, key="comparison_chart")
     
     # ============== ЗАКЛЮЧЕНИЕ ==============
     st.markdown("---")
@@ -414,8 +415,6 @@ st.markdown("---")
 st.markdown("### 🎥 Демонстрационное видео")
 
 try:
-    with open("video.mp4", "rb") as video_file:
-        video_bytes = video_file.read()
-    st.video(video_bytes)
-except FileNotFoundError:
-    st.error("⚠️ Файл video.mp4 не найден. Помести видео в ту же папку, где лежит app.py.")
+    st.video("video.mp4")
+except Exception as e:
+    st.info("ℹ️ Видео не добавлено. Вы можете загрузить video.mp4 в репозиторий для отображения демонстрации.")
